@@ -1,0 +1,15 @@
+# -*- python -*-
+from Defaults import *
+
+MAILMAN_SITE_LIST = '{{ mailman_site_list }}'
+
+DEFAULT_URL_PATTERN = '{{ mailman_default_url_pattern }}'
+IMAGE_LOGOS         = '/images/mailman/'
+
+DEFAULT_EMAIL_HOST = '{{ mailman_default_email_host }}'
+DEFAULT_URL_HOST   = '{{ mailman_default_url_host }}'
+add_virtualhost(DEFAULT_URL_HOST, DEFAULT_EMAIL_HOST)
+
+DEFAULT_SERVER_LANGUAGE = '{{ mailman_default_server_language }}'
+USE_ENVELOPE_SENDER    = 0              # Still used?
+DEFAULT_SEND_REMINDERS = 0

@@ -1,0 +1,31 @@
+---
+- name: Install mailman via apt
+  apt: pkg={{ item }} state=present
+  with_items:
+    - mailman
+  tags:
+    - mailman
+
+- name: install mailman config
+  template: src=mm_cfg.py.j2 dest=/etc/mailman/mm_cfg.py
+  tags:
+    - mailman
+  notify:
+    - restart mailman
+
+- name: check for existing lists 
+  command: "list_lists -b"
+  register: mailman_existing_lists
+  tags:
+    - mailman
+
+- name: create site list
+  command: "newlist -q {{ mailman_site_list }} {{ mailman_site_list_email }} {{ mailman_site_list_password }}"
+  when: mailman_site_list not in mailman_existing_lists.stdout_lines
+  tags:
+    - mailman
+
+- name: create www document root
+  file: path=/var/www/lists state=directory
+  tags:
+    - mailman
