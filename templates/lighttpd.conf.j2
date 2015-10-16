@@ -1,0 +1,37 @@
+server.modules += ("mod_redirect", "mod_alias", "mod_cgi", "mod_accesslog")
+
+$HTTP["host"] == "{{ mailman_default_url_host }}" {
+    var.host = "{{ mailman_default_url_host }}"
+    var.docpath = "/var/lib/mailman/"
+    var.logpath = "/var/log/lighttpd/"
+
+    server.document-root = docpath + "cgi-bin/"
+    accesslog.filename = logpath + host + "-access-log"
+
+    url.redirect = ( "^/$" => "/listinfo" )
+
+    alias.url = (
+        "/icons/" => docpath + "icons/",
+        "/pipermail/" => docpath + "archives/"
+    )
+
+    cgi.assign = (
+        "/admin" => "",
+        "/admindb" => "",
+        "/confirm" => "",
+        "/create" => "",
+        "/edithtml" => "",
+        "/listinfo" => "",
+        "/options" => "",
+        "/private" => "",
+        "/rmlist" => "",
+        "/roster" => "",
+        "/subscribe" => "")
+}
+
+$SERVER["socket"] == ":80" {
+    $HTTP["host"] == "{{ mailman_default_url_host }}" {
+        url.redirect = ( "^/(.*)" => "https://{{ mailman_default_url_host }}" )
+        server.name = "{{ mailman_default_url_host }}"
+    }
+}
