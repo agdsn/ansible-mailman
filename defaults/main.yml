@@ -1,3 +1,4 @@
 ---
 mailman_site_list: mailman
 mailman_default_server_language: en
+mailman_image_logos: "/icons/"
