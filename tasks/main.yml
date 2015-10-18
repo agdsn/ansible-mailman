@@ -13,7 +13,7 @@
   notify:
     - restart mailman
 
-- name: check for existing lists 
+- name: check for existing lists
   command: "list_lists -b"
   register: mailman_existing_lists
   tags:
@@ -23,6 +23,27 @@
   command: "newlist -q {{ mailman_site_list }} {{ mailman_site_list_email }} {{ mailman_site_list_password }}"
   when: mailman_site_list not in mailman_existing_lists.stdout_lines
   tags:
+    - mailman
+
+- name: create mailing lists
+  shell: yes | newlist
+               "--urlhost={{ item.urlhost | default(mailman_default_url_host) }}"
+               "--emailhost={{ item.emailhost | default(mailman_default_email_host) }}"
+               "{{ item.name }}"
+               "{{ item.admin_email }}"
+               "{{ item.admin_password }}"
+  with_items: mailman_mailing_lists
+  when: item.name not in mailman_existing_lists.stdout_lines
+  tags:
+    - mailman
+
+- name: create mailing list aliases
+  template: src=list-aliases.j2 dest="/etc/postfix/aliases.d/{{ item.name }}.aliases"
+  with_items: "mailman_mailing_lists + [{'name': '{{ mailman_site_list }}' }]"
+  notify:
+    - update include alias file
+  tags:
+    - postfix
     - mailman
 
 - name: create www document root
