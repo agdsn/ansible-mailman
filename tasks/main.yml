@@ -27,13 +27,42 @@
 
 - name: create mailing lists
   shell: yes | newlist
-               "--urlhost={{ item.urlhost | default(mailman_default_url_host) }}"
-               "--emailhost={{ item.emailhost | default(mailman_default_email_host) }}"
+               "--urlhost={{ item.initial_settings.urlhost | default(mailman_default_url_host) }}"
+               "--emailhost={{ item.initial_settings.emailhost | default(mailman_default_email_host) }}"
                "{{ item.name }}"
-               "{{ item.admin_email }}"
-               "{{ item.admin_password }}"
+               "{{ item.initial_settings.admin_email }}"
+               "{{ item.initial_settings.admin_password }}"
   with_items: mailman_mailing_lists
   when: item.name not in mailman_existing_lists.stdout_lines
+  tags:
+    - mailman
+
+- name: create tmpfiles for new list configs
+  command: mktemp
+  with_items: mailman_mailing_lists
+  when: item.name not in mailman_existing_lists.stdout_lines
+  register: mailman_config_tmpfiles
+  tags:
+    - mailman
+
+- name: upload new lists configs
+  template: src=list_config.py.j2 dest="{{ item.stdout }}"
+  with_items: mailman_config_tmpfiles.results
+  when: item.changed
+  tags:
+    - mailman
+
+- name: configure mailing lists
+  command: config_list --inputfile "{{ item.stdout }}" "{{ item.item.name }}"
+  with_items: mailman_config_tmpfiles.results
+  when: item.changed
+  tags:
+    - mailman
+
+- name: delete tmpfiles
+  file: path="{{ item.stdout }}" state=absent
+  with_items: mailman_config_tmpfiles.results
+  when: item.changed
   tags:
     - mailman
 
