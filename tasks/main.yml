@@ -68,7 +68,7 @@
 
 - name: create mailing list aliases
   template: src=list-aliases.j2 dest="/etc/postfix/aliases.d/{{ item.name }}.aliases"
-  with_items: "mailman_mailing_lists + [{'name': '{{ mailman_site_list }}' }]"
+  with_items: mailman_mailing_lists
   notify:
     - update include alias file
   tags:
