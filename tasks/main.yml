@@ -32,14 +32,14 @@
                "{{ item.name }}"
                "{{ item.initial_settings.admin_email }}"
                "{{ item.initial_settings.admin_password }}"
-  with_items: mailman_mailing_lists
+  with_items: "{{ mailman_mailing_lists }}"
   when: item.name not in mailman_existing_lists.stdout_lines
   tags:
     - mailman
 
 - name: create tmpfiles for new list configs
   command: mktemp
-  with_items: mailman_mailing_lists
+  with_items: "{{ mailman_mailing_lists }}"
   when: item.name not in mailman_existing_lists.stdout_lines
   register: mailman_config_tmpfiles
   tags:
@@ -47,7 +47,7 @@
 
 - name: upload new lists configs
   template: src=list_config.py.j2 dest="{{ item.stdout }}"
-  with_items: mailman_config_tmpfiles.results
+  with_items: "{{ mailman_config_tmpfiles.results }}"
   when: item.changed
   tags:
     - mailman
