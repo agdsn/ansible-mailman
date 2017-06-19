@@ -54,21 +54,21 @@
 
 - name: configure mailing lists
   command: config_list --inputfile "{{ item.stdout }}" "{{ item.item.name }}"
-  with_items: mailman_config_tmpfiles.results
+  with_items: "{{ mailman_config_tmpfiles.results }}"
   when: item.changed
   tags:
     - mailman
 
 - name: delete tmpfiles
   file: path="{{ item.stdout }}" state=absent
-  with_items: mailman_config_tmpfiles.results
+  with_items: "{{ mailman_config_tmpfiles.results }}"
   when: item.changed
   tags:
     - mailman
 
 - name: create mailing list aliases
   template: src=list-aliases.j2 dest="/etc/postfix/aliases.d/{{ item.name }}.aliases"
-  with_items: mailman_mailing_lists
+  with_items: "{{ mailman_mailing_lists }}"
   notify:
     - update include alias file
   tags:
