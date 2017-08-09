@@ -36,6 +36,8 @@
   when: item.name not in mailman_existing_lists.stdout_lines
   tags:
     - mailman
+  notify:
+    - reload postfix
 
 - name: create tmpfiles for new list configs
   command: mktemp
@@ -64,15 +66,6 @@
   with_items: "{{ mailman_config_tmpfiles.results }}"
   when: item.changed
   tags:
-    - mailman
-
-- name: create mailing list aliases
-  template: src=list-aliases.j2 dest="/etc/postfix/aliases.d/{{ item.name }}.aliases"
-  with_items: "{{ mailman_mailing_lists }}"
-  notify:
-    - update include alias file
-  tags:
-    - postfix
     - mailman
 
 - name: create www document root
