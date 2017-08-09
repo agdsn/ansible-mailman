@@ -13,15 +13,15 @@
   notify:
     - restart mailman
 
-- name: check for existing lists
-  command: "list_lists -b"
-  register: mailman_existing_lists
+- name: Gather mailman facts
+  mailman_facts:
+  become_user: list
   tags:
     - mailman
 
 - name: create site list
   command: "newlist -q {{ mailman_site_list }} {{ mailman_site_list_email }} {{ mailman_site_list_password }}"
-  when: mailman_site_list not in mailman_existing_lists.stdout_lines
+  when: mailman_site_list not in mailman.lists
   tags:
     - mailman
 
@@ -33,7 +33,7 @@
                "{{ item.initial_settings.admin_email }}"
                "{{ item.initial_settings.admin_password }}"
   with_items: "{{ mailman_mailing_lists }}"
-  when: item.name not in mailman_existing_lists.stdout_lines
+  when: item.name not in mailman.lists
   tags:
     - mailman
   notify:
@@ -42,7 +42,7 @@
 - name: create tmpfiles for new list configs
   command: mktemp
   with_items: "{{ mailman_mailing_lists }}"
-  when: item.name not in mailman_existing_lists.stdout_lines
+  when: item.name not in mailman.lists
   register: mailman_config_tmpfiles
   tags:
     - mailman
