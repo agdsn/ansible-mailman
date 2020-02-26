@@ -1,8 +1,6 @@
 ---
 - name: Install mailman via apt
-  apt: pkg={{ item }} state=present
-  with_items:
-    - mailman
+  apt: name=mailman state=present
 
 - name: install mailman config
   template: src=mm_cfg.py.j2 dest=/etc/mailman/mm_cfg.py
